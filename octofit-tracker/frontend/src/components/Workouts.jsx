@@ -1,48 +1,5 @@
 import { useEffect, useState } from 'react';
-
-const getApiBaseUrl = () => {
-  const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim();
-  if (codespaceName) {
-    return `https://${codespaceName}-8000.app.github.dev`;
-  }
-
-  return 'http://127.0.0.1:8000';
-};
-
-const getApiUrl = async (path) => {
-  const candidates = [
-    `${getApiBaseUrl()}${path}`,
-    `http://localhost:8000${path}`,
-    `http://0.0.0.0:8000${path}`,
-  ];
-
-  for (const candidate of candidates) {
-    try {
-      const response = await fetch(candidate, { method: 'HEAD' });
-      if (response.ok || response.status < 500) {
-        return candidate;
-      }
-    } catch {
-      // Ignore and try the next candidate.
-    }
-  }
-
-  return `${getApiBaseUrl()}${path}`;
-};
-
-const getCollection = (payload) => {
-  if (Array.isArray(payload)) {
-    return payload;
-  }
-
-  if (payload && typeof payload === 'object') {
-    if (Array.isArray(payload.workouts)) return payload.workouts;
-    if (Array.isArray(payload.items)) return payload.items;
-    if (Array.isArray(payload.results)) return payload.results;
-  }
-
-  return [];
-};
+import { getApiUrl, getCollection } from '../api';
 
 function Workouts() {
   const [workouts, setWorkouts] = useState([]);
@@ -53,7 +10,7 @@ function Workouts() {
     const fetchWorkouts = async () => {
       try {
         const url = await getApiUrl('/api/workouts/');
-        const response = await fetch(url, { signal: controller.signal });
+        const response = await fetch(url, { signal: controller.signal, mode: 'cors' });
         if (!response.ok) {
           throw new Error(`Unable to load workouts from ${url}`);
         }

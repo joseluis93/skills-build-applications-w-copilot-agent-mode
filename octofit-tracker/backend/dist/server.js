@@ -20,6 +20,15 @@ const getApiBaseUrl = () => {
 };
 const apiBaseUrl = getApiBaseUrl();
 app.use(express_1.default.json());
+app.use((req, res, next) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204);
+    }
+    next();
+});
 const sendCollection = (res, resourceName, items) => {
     res.json({
         [resourceName]: items,
@@ -78,7 +87,7 @@ mongoose_1.default
     console.warn('MongoDB connection unavailable, continuing without database:', error);
 })
     .finally(() => {
-    app.listen(port, () => {
+    app.listen(port, '0.0.0.0', () => {
         console.log(`Backend listening on port ${port}`);
         console.log(`API base URL: ${apiBaseUrl}`);
     });

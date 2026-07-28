@@ -14,6 +14,7 @@ const getCodespaceApiHost = (hostname) => {
 };
 
 export const getApiBaseUrl = () => {
+  // Resolve the API host using Codespaces runtime values when available.
   const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim();
   if (codespaceName) {
     return `https://${codespaceName}-8000.app.github.dev`;

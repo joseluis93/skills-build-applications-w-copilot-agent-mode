@@ -2,9 +2,32 @@ import { useEffect, useState } from 'react';
 
 const getApiBaseUrl = () => {
   const codespaceName = import.meta.env.VITE_CODESPACE_NAME?.trim();
-  return codespaceName
-    ? `https://${codespaceName}-8000.app.github.dev`
-    : 'http://localhost:8000';
+  if (codespaceName) {
+    return `https://${codespaceName}-8000.app.github.dev`;
+  }
+
+  return 'http://127.0.0.1:8000';
+};
+
+const getApiUrl = async (path) => {
+  const candidates = [
+    `${getApiBaseUrl()}${path}`,
+    `http://localhost:8000${path}`,
+    `http://0.0.0.0:8000${path}`,
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      const response = await fetch(candidate, { method: 'HEAD' });
+      if (response.ok || response.status < 500) {
+        return candidate;
+      }
+    } catch {
+      // Ignore and try the next candidate.
+    }
+  }
+
+  return `${getApiBaseUrl()}${path}`;
 };
 
 const getCollection = (payload) => {
@@ -29,9 +52,10 @@ function Users() {
     const controller = new AbortController();
     const fetchUsers = async () => {
       try {
-        const response = await fetch(`${getApiBaseUrl()}/api/users/`, { signal: controller.signal });
+        const url = await getApiUrl('/api/users/');
+        const response = await fetch(url, { signal: controller.signal });
         if (!response.ok) {
-          throw new Error('Unable to load users');
+          throw new Error(`Unable to load users from ${url}`);
         }
         const payload = await response.json();
         setUsers(getCollection(payload));

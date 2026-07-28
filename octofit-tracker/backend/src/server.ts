@@ -9,10 +9,14 @@ import { Workout } from './models/workout';
 const app = express();
 const port = 8000;
 
-const codespaceName = process.env.CODESPACE_NAME;
-const apiBaseUrl = codespaceName
-  ? `https://${codespaceName}-8000.app.github.dev`
-  : 'http://localhost:8000';
+const getApiBaseUrl = () => {
+  const codespaceName = process.env.CODESPACE_NAME?.trim();
+  return codespaceName
+    ? `https://${codespaceName}-8000.app.github.dev`
+    : 'http://localhost:8000';
+};
+
+const apiBaseUrl = getApiBaseUrl();
 
 app.use(express.json());
 
